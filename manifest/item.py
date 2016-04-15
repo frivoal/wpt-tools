@@ -122,13 +122,14 @@ class TestharnessTest(URLManifestItem):
 class RefTest(URLManifestItem):
     item_type = "reftest"
 
-    def __init__(self, source_file, url, references, url_base="/", timeout=None,
+    def __init__(self, source_file, url, references, not_use_vivliostyle_for_reference, url_base="/", timeout=None,
                  manifest=None):
         URLManifestItem.__init__(self, source_file, url, url_base=url_base, manifest=manifest)
         for _, ref_type in references:
             if ref_type not in ["==", "!="]:
                 raise ValueError, "Unrecognised ref_type %s" % ref_type
         self.references = tuple(references)
+        self.not_use_vivliostyle_for_reference = not_use_vivliostyle_for_reference
         self.timeout = timeout
 
     @property
@@ -147,10 +148,12 @@ class RefTest(URLManifestItem):
 
     @classmethod
     def from_json(cls, manifest, tests_root, obj, source_files=None):
+
         source_file = get_source_file(source_files, tests_root, manifest, obj["path"])
         return cls(source_file,
                    obj["url"],
                    obj["references"],
+                   obj.get("not_use_vivliostyle_for_reference", False),
                    url_base=manifest.url_base,
                    timeout=obj.get("timeout"),
                    manifest=manifest)
